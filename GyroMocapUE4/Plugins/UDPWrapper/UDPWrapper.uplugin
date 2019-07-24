@@ -1,0 +1,32 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "0.4.0",
+	"FriendlyName": "UDPWrapper",
+	"Description": "Convenience UDP wrapper plugin.",
+	"Category": "Networking",
+	"CreatedBy": "getnamo",
+	"CreatedByURL": "http://getnamo.com/",
+	"DocsURL": "https://github.com/getnamo/udp-ue4",
+	"MarketplaceURL": "",
+	"SupportURL": "https://github.com/getnamo/udp-ue4/issues",
+	"CanContainContent": true,
+	"Installed": false,
+	"Modules": [
+		{
+			"Name": "UDPWrapper",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		},
+		{
+			"Name": "SIOJson",
+			"Type": "Runtime",
+			"LoadingPhase": "PreDefault"
+		},
+		{
+			"Name": "SIOJEditorPlugin",
+			"Type": "Developer",
+			"LoadingPhase": "Default"
+		}
+	]
+}
