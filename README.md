@@ -9,7 +9,7 @@ Wemos ESP32
 ![alt text](https://github.com/pgii/GyroMocapUE4/blob/master/Images/WemosESP32.jpg)
 
 ```
-ESP32 -- Arduino
+MPU9250 -- ESP32
 3.3V ------ 3.3V
 SDA --------- 21
 SCL --------- 22
