@@ -23,6 +23,9 @@ volatile bool mpuInterrupt = false;
 
 Quaternion q;
 
+unsigned long timing;
+unsigned long gyroDataIntervalSend = 50;
+
 void setup() 
 {
     Serial.begin(115200);
@@ -72,9 +75,13 @@ void loop()
 
         mpu.dmpGetQuaternion(&q, fifoBuffer);
 
-        String sensorName = ReadStringEEPROM(2);
-        String gyroDataJSONString = GetGyroDataJSONString(sensorName, q.x, q.y, q.z, q.w);
-        UDPSendData(gyroDataJSONString);
+        if (millis() - timing > gyroDataIntervalSend)
+        {
+            timing = millis();
+            String sensorName = ReadStringEEPROM(2);
+            String gyroDataJSONString = GetGyroDataJSONString(sensorName, q.x, q.y, q.z, q.w);
+            UDPSendData(gyroDataJSONString);
+        }
     }
 
     SerialPortReceive();
