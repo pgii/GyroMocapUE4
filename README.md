@@ -23,5 +23,5 @@ https://youtu.be/-snMEgDAt94
 Used plugin: https://github.com/getnamo/udp-ue4
 
 Currently used version v0.6.1 for UE 4.24
-https://github.com/getnamo/udp-ue4/releases
 
+Download from this page https://github.com/getnamo/udp-ue4/releases and put the Plugins folder from archive in to the root of your project.
