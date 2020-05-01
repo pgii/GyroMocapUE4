@@ -19,3 +19,5 @@ GND -------- GND
 https://youtu.be/-snMEgDAt94
 
 ![alt text](https://github.com/pgii/GyroMocapUE4/blob/master/Images/ScreenShot01.png)
+
+Used plugin: https://github.com/getnamo/udp-ue4
