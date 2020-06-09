@@ -7,8 +7,8 @@ internal class Math3D
         float cDegrees = (float)Math.PI * degrees / 180.0f;
         float cosDegrees = (float)Math.Cos(cDegrees);
         float sinDegrees = (float)Math.Sin(cDegrees);
-        float y = (point3D.Y * cosDegrees) + (point3D.Z * sinDegrees);
-        float z = (point3D.Y * -sinDegrees) + (point3D.Z * cosDegrees);
+        float y = point3D.Y * cosDegrees + point3D.Z * sinDegrees;
+        float z = point3D.Y * -sinDegrees + point3D.Z * cosDegrees;
         return new Point3D(point3D.X, y, z);
     }
 
@@ -17,8 +17,8 @@ internal class Math3D
         float cDegrees = (float)Math.PI * degrees / 180.0f;
         float cosDegrees = (float)Math.Cos(cDegrees);
         float sinDegrees = (float)Math.Sin(cDegrees);
-        float x = (point3D.X * cosDegrees) + (point3D.Z * sinDegrees);
-        float z = (point3D.X * -sinDegrees) + (point3D.Z * cosDegrees);
+        float x = point3D.X * cosDegrees + point3D.Z * sinDegrees;
+        float z = point3D.X * -sinDegrees + point3D.Z * cosDegrees;
         return new Point3D(x, point3D.Y, z);
     }
 
@@ -27,8 +27,8 @@ internal class Math3D
         float cDegrees = (float)Math.PI * degrees / 180.0f;
         float cosDegrees = (float)Math.Cos(cDegrees);
         float sinDegrees = (float)Math.Sin(cDegrees);
-        float x = (point3D.X * cosDegrees) + (point3D.Y * sinDegrees);
-        float y = (point3D.X * -sinDegrees) + (point3D.Y * cosDegrees);
+        float x = point3D.X * cosDegrees + point3D.Y * sinDegrees;
+        float y = point3D.X * -sinDegrees + point3D.Y * cosDegrees;
         return new Point3D(x, y, point3D.Z);
     }
 
@@ -68,5 +68,4 @@ internal class Math3D
             points3D[i] = Translate(points3D[i], oldOrigin, newOrigin);
         return points3D;
     }
-
 }

@@ -82,20 +82,4 @@ class ProtocolHelper
 
         return model;
     }
-
-    public static GyroDataModel ParseGyroDataModel(string jsonString)
-    {
-        GyroDataModel model = new GyroDataModel();
-
-        try
-        {
-            return JsonConvert.DeserializeObject<GyroDataModel>(jsonString);
-        }
-        catch (Exception ex)
-        {
-            Program.ExceptionLog(ex);
-        }
-
-        return model;
-    }
 }

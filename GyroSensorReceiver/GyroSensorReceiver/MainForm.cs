@@ -6,14 +6,16 @@ using System.Windows.Forms;
 
 public partial class MainForm : Form
 {
-    private SerialPort serialPort = new SerialPort();
+    private readonly SerialPort _serialPort = new SerialPort();
 
-    SensorCalibration sensorCalibration = new SensorCalibration();
+    SensorCalibration _sensorCalibration = new SensorCalibration();
 
-    UDPAsyncSocket recieveUDPServer = new UDPAsyncSocket();
-    UDPAsyncSocket senderUDPClient = new UDPAsyncSocket();
+    UDPAsyncSocket _receiveUdpServer = new UDPAsyncSocket();
+    UDPAsyncSocket _senderUdpClient = new UDPAsyncSocket();
 
-    Cube3D cube3D = new Cube3D(100);
+    readonly Cube3D _cube3D = new Cube3D(100);
+
+    readonly KalmanFilterQuaternion _kalmanFilterQuaternion = new KalmanFilterQuaternion(0.5f, 2.5f);
 
     public MainForm()
     {
@@ -30,19 +32,19 @@ public partial class MainForm : Form
 
         Cube3DRender(new GyroQuaternion("None", 0.25f, 0.25f, 0.25f, -1));
 
-        EventReceiveUDPServer eventReceiveUDPServer = new EventReceiveUDPServer();
-        Eventing.eventReceiveUDPServer = eventReceiveUDPServer;
-        Eventing.eventReceiveUDPServer.OnNewReceiveUDPServer += OnNewReceiveUDPServerEvent;
+        EventReceiveUDPServer eventReceiveUdpServer = new EventReceiveUDPServer();
+        Eventing.eventReceiveUDPServer = eventReceiveUdpServer;
+        Eventing.eventReceiveUDPServer.OnNewReceiveUDPServer += OnNewReceiveUdpServerEvent;
     }
 
-    void OnNewReceiveUDPServerEvent(object sender, NewEventReceiveUDPServerArgs e)
+    void OnNewReceiveUdpServerEvent(object sender, NewEventReceiveUDPServerArgs e)
     {
         try
         {
-            sensorCalibration.Push(e.ReceiveUDPServerMessage);
+            _sensorCalibration.Push(e.ReceiveUDPServerMessage);
 
             GyroQuaternion gyroQuaternionInverse = GyroQuaternion.Inverse(e.ReceiveUDPServerMessage);
-            GyroQuaternion gyroQuaternionCalibrationResult = sensorCalibration.GetCalibrationResult(e.ReceiveUDPServerMessage.sensorName);
+            GyroQuaternion gyroQuaternionCalibrationResult = _sensorCalibration.GetCalibrationResult(e.ReceiveUDPServerMessage.sensorName);
 
             if (gyroQuaternionCalibrationResult != null)
             {
@@ -50,16 +52,21 @@ public partial class MainForm : Form
 
                 gyroQuaternion = GetSettingsAxis(gyroQuaternion);
 
-                if (senderUDPClient.udpSocket != null && senderUDPClient.udpSocket.Connected)
-                    senderUDPClient.Send(gyroQuaternion);
+                if (_senderUdpClient.UdpSocket != null && _senderUdpClient.UdpSocket.Connected)
+                    _senderUdpClient.Send(gyroQuaternion);
 
                 if (e.ReceiveUDPServerMessage.sensorName == GetSelectorSensorValue())
+                {
+                    gyroQuaternion = _kalmanFilterQuaternion.Filter(gyroQuaternion);
+
                     Cube3DRender(gyroQuaternion);
+                }
+
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            
+            // ignored
         }
     }
 
@@ -67,41 +74,58 @@ public partial class MainForm : Form
     {
         float tmpX = 0, tmpY = 0, tmpZ = 0, tmpW = 0;
 
-        MethodInvoker methodInvokerDelegate = delegate ()
+        void MethodInvokerDelegate()
         {
             switch (cbReplaceAxisX.SelectedIndex)
             {
-                case 0: tmpX = gyroQuaternion.qX; break;
-                case 1: tmpX = gyroQuaternion.qY; break;
-                case 2: tmpX = gyroQuaternion.qZ; break;
+                case 0:
+                    tmpX = gyroQuaternion.qX;
+                    break;
+                case 1:
+                    tmpX = gyroQuaternion.qY;
+                    break;
+                case 2:
+                    tmpX = gyroQuaternion.qZ;
+                    break;
             }
+
             switch (cbReplaceAxisY.SelectedIndex)
             {
-                case 0: tmpY = gyroQuaternion.qX; break;
-                case 1: tmpY = gyroQuaternion.qY; break;
-                case 2: tmpY = gyroQuaternion.qZ; break;
+                case 0:
+                    tmpY = gyroQuaternion.qX;
+                    break;
+                case 1:
+                    tmpY = gyroQuaternion.qY;
+                    break;
+                case 2:
+                    tmpY = gyroQuaternion.qZ;
+                    break;
             }
+
             switch (cbReplaceAxisZ.SelectedIndex)
             {
-                case 0: tmpZ = gyroQuaternion.qX; break;
-                case 1: tmpZ = gyroQuaternion.qY; break;
-                case 2: tmpZ = gyroQuaternion.qZ; break;
+                case 0:
+                    tmpZ = gyroQuaternion.qX;
+                    break;
+                case 1:
+                    tmpZ = gyroQuaternion.qY;
+                    break;
+                case 2:
+                    tmpZ = gyroQuaternion.qZ;
+                    break;
             }
 
             tmpW = gyroQuaternion.qW;
 
-            if (chbInverseAxisX.Checked)
-                tmpX *= -1;
-            if (chbInverseAxisY.Checked)
-                tmpY *= -1;
-            if (chbInverseAxisZ.Checked)
-                tmpZ *= -1;
-        };
+            if (chbInverseAxisX.Checked) tmpX *= -1;
+            if (chbInverseAxisY.Checked) tmpY *= -1;
+            if (chbInverseAxisZ.Checked) tmpZ *= -1;
+        }
 
         if (InvokeRequired)
-            Invoke(methodInvokerDelegate);
+            Invoke((MethodInvoker) MethodInvokerDelegate);
         else
-            methodInvokerDelegate();
+            MethodInvokerDelegate();
 
         return new GyroQuaternion(gyroQuaternion.sensorName, tmpX, tmpY, tmpZ, tmpW);
     }
@@ -111,12 +135,15 @@ public partial class MainForm : Form
     {
         string selectorSensorValue = string.Empty;
 
-        MethodInvoker methodInvokerDelegate = delegate () { selectorSensorValue = cbSelectorSensor.Text; };
+        void MethodInvokerDelegate()
+        {
+            selectorSensorValue = cbSelectorSensor.Text;
+        }
 
         if (InvokeRequired)
-            Invoke(methodInvokerDelegate);
+            Invoke((MethodInvoker) MethodInvokerDelegate);
         else
-            methodInvokerDelegate();
+            MethodInvokerDelegate();
 
         return selectorSensorValue;
     }
@@ -125,13 +152,13 @@ public partial class MainForm : Form
     {
         Point3D point3D = GyroQuaternion.QuatToEuler(quat);
 
-        cube3D.RotateX = point3D.X;
-        cube3D.RotateY = point3D.Y;
-        cube3D.RotateZ = point3D.Z;
+        _cube3D.RotateX = point3D.X;
+        _cube3D.RotateY = point3D.Y;
+        _cube3D.RotateZ = point3D.Z;
 
         Point origin = new Point(pbCube3D.Width / 2, pbCube3D.Height / 2);
 
-        pbCube3D.Image = cube3D.drawCube(origin);
+        pbCube3D.Image = _cube3D.DrawCube(origin);
     }
 
     private void GetSerialPortList()
@@ -149,37 +176,37 @@ public partial class MainForm : Form
     {
         if (cbPortName.SelectedIndex != -1)
         {
-            serialPort.PortName = cbPortName.Text;
-            serialPort.BaudRate = 115200;
+            _serialPort.PortName = cbPortName.Text;
+            _serialPort.BaudRate = 115200;
 
             try
             {
-                serialPort.Open();
-                serialPort.DataReceived += serialPort_DataReceived;
+                _serialPort.Open();
+                _serialPort.DataReceived += serialPort_DataReceived;
             }
             catch (Exception)
             {
-                MessageBox.Show("Could not open the Serial Port.");
+                MessageBox.Show(@"Could not open the Serial Port.");
             }
         }
         else
         {
-            MessageBox.Show("Please select Serial Port");
+            MessageBox.Show(@"Please select Serial Port");
         }
 
-        if (serialPort.IsOpen)
-            btnConnect.Text = "Disconnect";
+        if (_serialPort.IsOpen)
+            btnConnect.Text = @"Disconnect";
     }
 
     private void Disconnect()
     {
-        serialPort.Close();
-        btnConnect.Text = "Connect";
+        _serialPort.Close();
+        btnConnect.Text = @"Connect";
     }
 
     private void btnConnect_Click(object sender, EventArgs e)
     {
-        if (serialPort.IsOpen)
+        if (_serialPort.IsOpen)
             Disconnect();
         else
             ConnectToSerialPort();
@@ -192,179 +219,178 @@ public partial class MainForm : Form
 
     private void SendData(string str)
     {
-        if (!serialPort.IsOpen)
+        if (!_serialPort.IsOpen)
             return;
 
-        serialPort.Write(str);
+        _serialPort.Write(str);
     }
 
     private void Form1_FormClosing(object sender, FormClosingEventArgs e)
     {
-        if (serialPort.IsOpen)
-            serialPort.Close();
+        if (_serialPort.IsOpen)
+            _serialPort.Close();
     }
 
     private void serialPort_DataReceived(object sender, SerialDataReceivedEventArgs e)
     {
-        if (!serialPort.IsOpen)
+        if (!_serialPort.IsOpen)
             return;
 
-        string recievedString = serialPort.ReadLine().Replace("\r", "").Replace("\n", "");
-        if (!string.IsNullOrWhiteSpace(recievedString))
-            SerialPortParseReceived(recievedString);
+        string receivedString = _serialPort.ReadLine().Replace("\r", "").Replace("\n", "");
+        if (!string.IsNullOrWhiteSpace(receivedString))
+            SerialPortParseReceived(receivedString);
     }
 
-    private void SerialPortParseReceived(string recievedString)
+    private void SerialPortParseReceived(string receivedString)
     {
-        BaseModel baseModel = ProtocolHelper.ParseBaseModel(recievedString);
+        BaseModel baseModel = ProtocolHelper.ParseBaseModel(receivedString);
 
         if (baseModel.type == "loadSettingsResult")
         {
-            SettingsModel settingsModel = ProtocolHelper.ParseSettingsModel(recievedString);
+            SettingsModel settingsModel = ProtocolHelper.ParseSettingsModel(receivedString);
 
             SetSettingsControl(settingsModel);
         }
 
         if (baseModel.type == "saveSettingsResult")
         {
-            SaveSettingsResultModel saveSettingsResultModel = ProtocolHelper.ParseSaveSettingsResultModel(recievedString);
+            SaveSettingsResultModel saveSettingsResultModel = ProtocolHelper.ParseSaveSettingsResultModel(receivedString);
 
             if (saveSettingsResultModel.error == 0)
-                MessageBox.Show("Save completed");
+                MessageBox.Show(@"Save completed");
         }
 
         if (baseModel.type == "resetSettingsResult")
         {
-            ResetSettingsResultModel resetSettingsResultModel =
-                ProtocolHelper.ParseResetSettingsResultModel(recievedString);
+            ResetSettingsResultModel resetSettingsResultModel = ProtocolHelper.ParseResetSettingsResultModel(receivedString);
 
             if (resetSettingsResultModel.error == 0)
-                MessageBox.Show("Reset completed");
+                MessageBox.Show(@"Reset completed");
         }
 
         if (baseModel.type == "getStatusResult")
         {
-            StatusModel statusModel = ProtocolHelper.ParseStatusModel(recievedString);
+            StatusModel statusModel = ProtocolHelper.ParseStatusModel(receivedString);
 
             SetStatusControl(statusModel);
         }
 
-        SetReceiveLog(recievedString);
+        SetReceiveLog(receivedString);
     }
 
     private void SetSettingsControl(SettingsModel settingsModel)
     {
-        MethodInvoker methodInvokerDelegate = delegate()
+        void MethodInvokerDelegate()
         {
             tbWiFiSSID.Text = settingsModel.wifi_ssid;
             tbWiFiPass.Text = settingsModel.wifi_pass;
             cbSensorName.Text = settingsModel.sensor_name;
             tbMocapServer.Text = settingsModel.mocap_server;
             nudMocapServerPort.Text = settingsModel.mocap_server_port;
-        };
+        }
 
         if (InvokeRequired)
-            Invoke(methodInvokerDelegate);
+            Invoke((MethodInvoker) MethodInvokerDelegate);
         else
-            methodInvokerDelegate();
+            MethodInvokerDelegate();
     }
 
     private void SetStatusControl(StatusModel statusModel)
     {
-        MethodInvoker methodInvokerDelegate = delegate()
+        void MethodInvokerDelegate()
         {
             pbWiFiStatus.Image = statusModel.wifi_status == 1
                 ? GyroSensorReceiver.Properties.Resources.WiFiConnection
                 : GyroSensorReceiver.Properties.Resources.WiFiNoConnection;
             tbIPAddress.Text = statusModel.local_ip;
-        };
+        }
 
         if (InvokeRequired)
-            Invoke(methodInvokerDelegate);
+            Invoke((MethodInvoker) MethodInvokerDelegate);
         else
-            methodInvokerDelegate();
+            MethodInvokerDelegate();
     }
 
-    private void SetReceiveLog(string recievedData)
+    private void SetReceiveLog(string receivedData)
     {
-        MethodInvoker methodInvokerDelegate = delegate()
+        void MethodInvokerDelegate()
         {
-            rtxtDataArea.AppendText(recievedData + Environment.NewLine);
-        };
+            rtxtDataArea.AppendText(receivedData + Environment.NewLine);
+        }
 
         if (InvokeRequired)
-            Invoke(methodInvokerDelegate);
+            Invoke((MethodInvoker) MethodInvokerDelegate);
         else
-            methodInvokerDelegate();
+            MethodInvokerDelegate();
     }
 
     private void btnLoadSettings_Click(object sender, EventArgs e)
     {
         object loadSettingsObject = new {type = "loadSettings"};
-        string loadSettingsJSONString = JsonConvert.SerializeObject(loadSettingsObject);
+        string loadSettingsJsonString = JsonConvert.SerializeObject(loadSettingsObject);
 
-        SendData(loadSettingsJSONString);
+        SendData(loadSettingsJsonString);
     }
 
     private void btnSaveSettings_Click(object sender, EventArgs e)
     {
-        string wifiSSID = tbWiFiSSID.Text;
+        string wifiSsid = tbWiFiSSID.Text;
         string wifiPass = tbWiFiPass.Text;
         string sensorName = cbSensorName.Text;
         string mocapServer = tbMocapServer.Text;
-        string mocapServerPort = nudMocapServerPort.Text.ToString();
+        string mocapServerPort = nudMocapServerPort.Text;
 
         object saveSettingsObject = new
         {
             type = "saveSettings",
-            wifi_ssid = wifiSSID,
+            wifi_ssid = wifiSsid,
             wifi_pass = wifiPass,
             sensor_name = sensorName,
             mocap_server = mocapServer,
             mocap_server_port = mocapServerPort
         };
 
-        string saveSettingsJSONString = JsonConvert.SerializeObject(saveSettingsObject);
-        SendData(saveSettingsJSONString);
+        string saveSettingsJsonString = JsonConvert.SerializeObject(saveSettingsObject);
+        SendData(saveSettingsJsonString);
     }
 
     private void btnResetSettings_Click(object sender, EventArgs e)
     {
         object resetSettingsObject = new {type = "resetSettings"};
-        string resetSettingsJSONString = JsonConvert.SerializeObject(resetSettingsObject);
+        string resetSettingsJsonString = JsonConvert.SerializeObject(resetSettingsObject);
 
-        SendData(resetSettingsJSONString);
+        SendData(resetSettingsJsonString);
     }
 
     private void btnGetStatus_Click(object sender, EventArgs e)
     {
         object getStatusObject = new {type = "getStatus"};
-        string getStatusJSONString = JsonConvert.SerializeObject(getStatusObject);
+        string getStatusJsonString = JsonConvert.SerializeObject(getStatusObject);
 
-        SendData(getStatusJSONString);
+        SendData(getStatusJsonString);
     }
 
     private void btnStartUDPServer_Click(object sender, EventArgs e)
     {
-        if (recieveUDPServer.udpSocket == null || !recieveUDPServer.udpSocket.IsBound)
+        if (_receiveUdpServer.UdpSocket == null || !_receiveUdpServer.UdpSocket.IsBound)
         {
-            recieveUDPServer = new UDPAsyncSocket();
-            recieveUDPServer.StartServer((int)nudUDPServerRecieverPort.Value);
+            _receiveUdpServer = new UDPAsyncSocket();
+            _receiveUdpServer.StartServer((int)nudUDPServerRecieverPort.Value);
         }
     }
 
     private void btnStartUDPClientSender_Click(object sender, EventArgs e)
     {
-        if (senderUDPClient.udpSocket != null)
-            if (senderUDPClient.udpSocket.Connected)
-                senderUDPClient.udpSocket.Close();
+        if (_senderUdpClient.UdpSocket != null)
+            if (_senderUdpClient.UdpSocket.Connected)
+                _senderUdpClient.UdpSocket.Close();
 
-        senderUDPClient = new UDPAsyncSocket();
-        senderUDPClient.StartClient("127.0.0.1", (int) nudUDPClientSenderPort.Value);
+        _senderUdpClient = new UDPAsyncSocket();
+        _senderUdpClient.StartClient("127.0.0.1", (int) nudUDPClientSenderPort.Value);
     }
 
     private void btnCalibration_Click(object sender, EventArgs e)
     {
-        sensorCalibration = new SensorCalibration();
+        _sensorCalibration = new SensorCalibration();
     }
 }

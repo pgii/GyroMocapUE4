@@ -4,12 +4,12 @@ using System.Windows.Forms;
 
 internal class Cube3D
 {
-    public int width = 0;
-    public int height = 0;
-    public int depth = 0;
+    public int Width;
+    public int Height;
+    public int Depth;
 
-    Camera camera = new Camera();
-    Point3D cubeOrigin;
+    readonly Camera _camera = new Camera();
+    readonly Point3D _cubeOrigin;
 
     public float RotateX { get; set; }
     public float RotateY { get; set; }
@@ -17,37 +17,13 @@ internal class Cube3D
 
     public Cube3D(int side)
     {
-        width = side;
-        height = side;
-        depth = side;
-        cubeOrigin = new Point3D(width / 2, height / 2, depth / 2);
+        Width = side;
+        Height = side;
+        Depth = side;
+        _cubeOrigin = new Point3D((float) Width / 2, (float) Height / 2, (float) Depth / 2);
     }
 
-    public Cube3D(int side, Point3D origin)
-    {
-        width = side;
-        height = side;
-        depth = side;
-        cubeOrigin = origin;
-    }
-
-    public Cube3D(int Width, int Height, int Depth)
-    {
-        width = Width;
-        height = Height;
-        depth = Depth;
-        cubeOrigin = new Point3D(width / 2, height / 2, depth / 2);
-    }
-
-    public Cube3D(int Width, int Height, int Depth, Point3D origin)
-    {
-        width = Width;
-        height = Height;
-        depth = Depth;
-        cubeOrigin = origin;
-    }
-
-    public static Rectangle getBounds(PointF[] points)
+    public static Rectangle GetBounds(PointF[] points)
     {
         float left = points[0].X;
         float right = points[0].X;
@@ -65,7 +41,7 @@ internal class Cube3D
         return new Rectangle(0, 0, (int)Math.Round(right - left), (int)Math.Round(bottom - top));
     }
 
-    public Bitmap drawCube(Point drawOrigin)
+    public Bitmap DrawCube(Point drawOrigin)
     {
         PointF[] point3D = new PointF[24];
         Point tmpOrigin = new Point(0, 0);
@@ -74,41 +50,40 @@ internal class Cube3D
 
         float zoom = Screen.PrimaryScreen.Bounds.Width / 1.5f;
 
-        Point3D[] cubePoints = fillCubeVertices(width, height, depth);
+        Point3D[] cubePoints = FillCubeVertices(Width, Height, Depth);
         
         Point3D anchorPoint = cubePoints[4];
-        float cameraZ = -((anchorPoint.X - cubeOrigin.X) * zoom / cubeOrigin.X) + anchorPoint.Z;
-        camera.Position = new Point3D(cubeOrigin.X, cubeOrigin.Y, cameraZ);
+        float cameraZ = -((anchorPoint.X - _cubeOrigin.X) * zoom / _cubeOrigin.X) + anchorPoint.Z;
+        _camera.Position = new Point3D(_cubeOrigin.X, _cubeOrigin.Y, cameraZ);
 
-        cubePoints = Math3D.Translate(cubePoints, cubeOrigin, point0);
+        cubePoints = Math3D.Translate(cubePoints, _cubeOrigin, point0);
         cubePoints = Math3D.RotateX(cubePoints, RotateX);
         cubePoints = Math3D.RotateY(cubePoints, RotateY);
         cubePoints = Math3D.RotateZ(cubePoints, RotateZ);
-        cubePoints = Math3D.Translate(cubePoints, point0, cubeOrigin);
+        cubePoints = Math3D.Translate(cubePoints, point0, _cubeOrigin);
 
-        Point3D vec;
         for (int i = 0; i < point3D.Length; i++)
         {
-            vec = cubePoints[i];
-            if (vec.Z - camera.Position.Z >= 0)
+            Point3D vec = cubePoints[i];
+            if (vec.Z - _camera.Position.Z >= 0)
             {
-                point3D[i].X = (int)(-(vec.X - camera.Position.X) / (-0.1f) * zoom) + drawOrigin.X;
-                point3D[i].Y = (int)((vec.Y - camera.Position.Y) / (-0.1f) * zoom) + drawOrigin.Y;
+                point3D[i].X = (int)(-(vec.X - _camera.Position.X) / (-0.1f) * zoom) + drawOrigin.X;
+                point3D[i].Y = (int)((vec.Y - _camera.Position.Y) / (-0.1f) * zoom) + drawOrigin.Y;
             }
             else
             {
-                tmpOrigin.X = (int)((cubeOrigin.X - camera.Position.X) / (cubeOrigin.Z - camera.Position.Z) * zoom) + drawOrigin.X;
-                tmpOrigin.Y = (int)(-(cubeOrigin.Y - camera.Position.Y) / (cubeOrigin.Z - camera.Position.Z) * zoom) + drawOrigin.Y;
+                tmpOrigin.X = (int)((_cubeOrigin.X - _camera.Position.X) / (_cubeOrigin.Z - _camera.Position.Z) * zoom) + drawOrigin.X;
+                tmpOrigin.Y = (int)(-(_cubeOrigin.Y - _camera.Position.Y) / (_cubeOrigin.Z - _camera.Position.Z) * zoom) + drawOrigin.Y;
 
-                point3D[i].X = (float)((vec.X - camera.Position.X) / (vec.Z - camera.Position.Z) * zoom + drawOrigin.X);
-                point3D[i].Y = (float)(-(vec.Y - camera.Position.Y) / (vec.Z - camera.Position.Z) * zoom + drawOrigin.Y);
+                point3D[i].X = (vec.X - _camera.Position.X) / (vec.Z - _camera.Position.Z) * zoom + drawOrigin.X;
+                point3D[i].Y = -(vec.Y - _camera.Position.Y) / (vec.Z - _camera.Position.Z) * zoom + drawOrigin.Y;
 
                 point3D[i].X = (int)point3D[i].X;
                 point3D[i].Y = (int)point3D[i].Y;
             }
         }
 
-        Rectangle bounds = getBounds(point3D);
+        Rectangle bounds = GetBounds(point3D);
         bounds.Width += drawOrigin.X;
         bounds.Height += drawOrigin.Y;
 
@@ -150,40 +125,40 @@ internal class Cube3D
         return tmpBmp;
     }
 
-    public static Point3D[] fillCubeVertices(int width, int height, int depth)
+    public static Point3D[] FillCubeVertices(int width, int height, int depth)
     {
-        Point3D[] verts = new Point3D[24];
+        Point3D[] vertices = new Point3D[24];
 
-        verts[0] = new Point3D(0, 0, 0);
-        verts[1] = new Point3D(0, height, 0);
-        verts[2] = new Point3D(width, height, 0);
-        verts[3] = new Point3D(width, 0, 0);
+        vertices[0] = new Point3D(0, 0, 0);
+        vertices[1] = new Point3D(0, height, 0);
+        vertices[2] = new Point3D(width, height, 0);
+        vertices[3] = new Point3D(width, 0, 0);
 
-        verts[4] = new Point3D(0, 0, depth);
-        verts[5] = new Point3D(0, height, depth);
-        verts[6] = new Point3D(width, height, depth);
-        verts[7] = new Point3D(width, 0, depth);
+        vertices[4] = new Point3D(0, 0, depth);
+        vertices[5] = new Point3D(0, height, depth);
+        vertices[6] = new Point3D(width, height, depth);
+        vertices[7] = new Point3D(width, 0, depth);
 
-        verts[8] = new Point3D(0, 0, 0);
-        verts[9] = new Point3D(0, 0, depth);
-        verts[10] = new Point3D(0, height, depth);
-        verts[11] = new Point3D(0, height, 0);
+        vertices[8] = new Point3D(0, 0, 0);
+        vertices[9] = new Point3D(0, 0, depth);
+        vertices[10] = new Point3D(0, height, depth);
+        vertices[11] = new Point3D(0, height, 0);
 
-        verts[12] = new Point3D(width, 0, 0);
-        verts[13] = new Point3D(width, 0, depth);
-        verts[14] = new Point3D(width, height, depth);
-        verts[15] = new Point3D(width, height, 0);
+        vertices[12] = new Point3D(width, 0, 0);
+        vertices[13] = new Point3D(width, 0, depth);
+        vertices[14] = new Point3D(width, height, depth);
+        vertices[15] = new Point3D(width, height, 0);
 
-        verts[16] = new Point3D(0, height, 0);
-        verts[17] = new Point3D(0, height, depth);
-        verts[18] = new Point3D(width, height, depth);
-        verts[19] = new Point3D(width, height, 0);
+        vertices[16] = new Point3D(0, height, 0);
+        vertices[17] = new Point3D(0, height, depth);
+        vertices[18] = new Point3D(width, height, depth);
+        vertices[19] = new Point3D(width, height, 0);
 
-        verts[20] = new Point3D(0, 0, 0);
-        verts[21] = new Point3D(0, 0, depth);
-        verts[22] = new Point3D(width, 0, depth);
-        verts[23] = new Point3D(width, 0, 0);
+        vertices[20] = new Point3D(0, 0, 0);
+        vertices[21] = new Point3D(0, 0, depth);
+        vertices[22] = new Point3D(width, 0, depth);
+        vertices[23] = new Point3D(width, 0, 0);
 
-        return verts;
+        return vertices;
     }
 }

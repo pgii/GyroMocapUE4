@@ -21,7 +21,7 @@ public class GyroQuaternion
     public static GyroQuaternion Inverse(GyroQuaternion quat)
     {
         GyroQuaternion quaternion2 = new GyroQuaternion(quat.sensorName, 0, 0, 0, -1);
-        float num2 = (quat.qX * quat.qX) + (quat.qY * quat.qY) + (quat.qZ * quat.qZ) + (quat.qW * quat.qW);
+        float num2 = quat.qX * quat.qX + quat.qY * quat.qY + quat.qZ * quat.qZ + quat.qW * quat.qW;
         float num = 1f / num2;
 
         quaternion2.qX = -quat.qX * num;
@@ -49,57 +49,57 @@ public class GyroQuaternion
         float Z = quat.qZ;
         float W = quat.qW;
 
-        float SingularityTest = Z * X - W * Y;
-        float YawY = 2f * (W * Z + X * Y);
-        float YawX = (1f - 2f * (Y * Y + Z * Z));
+        float singularityTest = Z * X - W * Y;
+        float yawY = 2f * (W * Z + X * Y);
+        float yawX = 1f - 2f * (Y * Y + Z * Z);
 
-        const float RAD_TO_DEG = (float)((180) / Math.PI);
+        const float RAD_TO_DEG = (float)(180 / Math.PI);
 
-        if (SingularityTest < -0.4999995f)
+        if (singularityTest < -0.4999995f)
         {
             point3D.X = -90f;
-            point3D.Y = (float)Math.Atan2(YawY, YawX) * RAD_TO_DEG;
-            point3D.Z = NormalizeAxis((float)(-point3D.Y - (2f * Math.Atan2(X, W) * RAD_TO_DEG)));
+            point3D.Y = (float)Math.Atan2(yawY, yawX) * RAD_TO_DEG;
+            point3D.Z = NormalizeAxis((float)(-point3D.Y - 2f * Math.Atan2(X, W) * RAD_TO_DEG));
         }
-        else if (SingularityTest > 0.4999995f)
+        else if (singularityTest > 0.4999995f)
         {
             point3D.X = 90f;
-            point3D.Y = (float)Math.Atan2(YawY, YawX) * RAD_TO_DEG;
-            point3D.Z = NormalizeAxis((float)(point3D.Y - (2f * Math.Atan2(X, W) * RAD_TO_DEG)));
+            point3D.Y = (float)Math.Atan2(yawY, yawX) * RAD_TO_DEG;
+            point3D.Z = NormalizeAxis((float)(point3D.Y - 2f * Math.Atan2(X, W) * RAD_TO_DEG));
         }
         else
         {
-            point3D.X = (float)Math.Asin(2f * (SingularityTest)) * RAD_TO_DEG;
-            point3D.Y = (float)Math.Atan2(YawY, YawX) * RAD_TO_DEG;
-            point3D.Z = (float)Math.Atan2(-2f * (W * X + Y * Z), (1f - 2f * (X * X + Y * Y))) * RAD_TO_DEG;
+            point3D.X = (float)Math.Asin(2f * singularityTest) * RAD_TO_DEG;
+            point3D.Y = (float)Math.Atan2(yawY, yawX) * RAD_TO_DEG;
+            point3D.Z = (float)Math.Atan2(-2f * (W * X + Y * Z), 1f - 2f * (X * X + Y * Y)) * RAD_TO_DEG;
         }
 
         return point3D;
     }
 
-    private static float NormalizeAxis(float Angle)
+    private static float NormalizeAxis(float angle)
     {
-        Angle = Fmod(Angle, 360);
-        if (Angle < 0f)
-            Angle += 360f;
-        if (Angle > 180f)
-            Angle -= 360f;
-        return Angle;
+        angle = FMod(angle, 360);
+        if (angle < 0f)
+            angle += 360f;
+        if (angle > 180f)
+            angle -= 360f;
+        return angle;
     }
 
-    private static float Fmod(float X, float Y)
+    private static float FMod(float x, float y)
     {
-        if (Math.Abs(Y) <= 1E-8f)
+        if (Math.Abs(y) <= 1E-8f)
             return 0;
 
-        float Quotient = (float)((int)(X / Y));
-        float IntPortion = Y * Quotient;
+        float quotient = (int)(x / y);
+        float intPortion = y * quotient;
 
-        if (Math.Abs(IntPortion) > Math.Abs(X))
-            IntPortion = X;
+        if (Math.Abs(intPortion) > Math.Abs(x))
+            intPortion = x;
 
-        float Result = X - IntPortion;
-        return Result;
+        float result = x - intPortion;
+        return result;
     }
 }
 

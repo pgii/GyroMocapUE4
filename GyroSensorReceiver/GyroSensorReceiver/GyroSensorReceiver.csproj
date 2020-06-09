@@ -66,22 +66,18 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.12.0.2\lib\net40\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\packages\Newtonsoft.Json.12.0.3\lib\net40\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Deployment" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Events\Eventing.cs" />
     <Compile Include="Events\Events\EventReceiveUDPServer.cs" />
+    <Compile Include="Helper\KalmanFilterQuaternion.cs" />
+    <Compile Include="Helper\KalmanFilter.cs" />
     <Compile Include="Helper\SensorCalibration.cs" />
     <Compile Include="Helper\UDPAsyncSocket.cs" />
     <Compile Include="Models\GyroDataModel.cs" />
