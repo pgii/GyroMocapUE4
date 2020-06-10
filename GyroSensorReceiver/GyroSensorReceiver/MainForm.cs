@@ -15,7 +15,7 @@ public partial class MainForm : Form
 
     readonly Cube3D _cube3D = new Cube3D(100);
 
-    readonly KalmanFilterQuaternion _kalmanFilterQuaternion = new KalmanFilterQuaternion(0.5f, 2.5f);
+    readonly FilterQuaternion _filterQuaternion = new FilterQuaternion(0.1f, 2.5f, 5, 15);
 
     public MainForm()
     {
@@ -57,7 +57,7 @@ public partial class MainForm : Form
 
                 if (e.ReceiveUDPServerMessage.sensorName == GetSelectorSensorValue())
                 {
-                    gyroQuaternion = _kalmanFilterQuaternion.Filter(gyroQuaternion);
+                    gyroQuaternion = _filterQuaternion.Filter(gyroQuaternion);
 
                     Cube3DRender(gyroQuaternion);
                 }

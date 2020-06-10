@@ -76,11 +76,12 @@
   <ItemGroup>
     <Compile Include="Events\Eventing.cs" />
     <Compile Include="Events\Events\EventReceiveUDPServer.cs" />
-    <Compile Include="Helper\KalmanFilterQuaternion.cs" />
+    <Compile Include="Helper\FixedSizedQueue.cs" />
+    <Compile Include="Helper\FilterQuaternion.cs" />
     <Compile Include="Helper\KalmanFilter.cs" />
     <Compile Include="Helper\SensorCalibration.cs" />
+    <Compile Include="Helper\SimpleMovingAverageQuaternion.cs" />
     <Compile Include="Helper\UDPAsyncSocket.cs" />
-    <Compile Include="Models\GyroDataModel.cs" />
     <Compile Include="Helper\ProtocolHelper.cs" />
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
@@ -90,7 +91,6 @@
     </Compile>
     <Compile Include="Models\BaseModel.cs" />
     <Compile Include="Models\GyroQuaternion.cs" />
-    <Compile Include="Models\GyroQuaternionCalibrationModel.cs" />
     <Compile Include="Models\SettingsModel.cs" />
     <Compile Include="Models\StatusModel.cs" />
     <Compile Include="Program.cs" />
