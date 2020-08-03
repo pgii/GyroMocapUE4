@@ -8,6 +8,9 @@ Wemos ESP32
 
 ![alt text](https://github.com/pgii/GyroMocapUE4/blob/master/Images/WemosESP32.jpg)
 
+Module
+![alt text](https://github.com/pgii/GyroMocapUE4/blob/master/Images/Module.jpg)
+
 ```
 MPU9250 -- ESP32
 3.3V ------ 3.3V
