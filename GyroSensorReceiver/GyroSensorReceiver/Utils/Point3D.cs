@@ -1,15 +1,18 @@
-﻿public class Point3D
+﻿namespace GyroSensorReceiver.Utils
 {
-    public float X;
-    public float Y;
-    public float Z;
-
-    public Point3D(float x, float y, float z)
+    public class Point3D
     {
-        X = x;
-        Y = y;
-        Z = z;
-    }
+        public float X;
+        public float Y;
+        public float Z;
 
-    public Point3D() { }
+        public Point3D(float x, float y, float z)
+        {
+            X = x;
+            Y = y;
+            Z = z;
+        }
+
+        public Point3D() { }
+    }
 }

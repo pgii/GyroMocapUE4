@@ -1,34 +1,3 @@
-// I2C device class (I2Cdev) demonstration Arduino sketch for MPU9150 class, 3D math helper
-// 6/5/2012 by Jeff Rowberg <jeff@rowberg.net>
-// Updates should (hopefully) always be available at https://github.com/jrowberg/i2cdevlib
-//
-// Changelog:
-//     2012-06-05 - add 3D math helper file to DMP6 example sketch
-
-/* ============================================
-I2Cdev device library code is placed under the MIT license
-Copyright (c) 2012 Jeff Rowberg
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
-===============================================
-*/
-
 #ifndef _HELPER_3DMATH_H_
 #define _HELPER_3DMATH_H_
 
@@ -39,177 +8,180 @@ class Quaternion {
         float y;
         float z;
         
-        Quaternion() {
+        Quaternion() 
+        {
             w = 1.0f;
             x = 0.0f;
             y = 0.0f;
             z = 0.0f;
         }
         
-        Quaternion(float nw, float nx, float ny, float nz) {
+        Quaternion(float nw, float nx, float ny, float nz) 
+        {
             w = nw;
             x = nx;
             y = ny;
             z = nz;
         }
 
-        Quaternion getProduct(Quaternion q) {
-            // Quaternion multiplication is defined by:
-            //     (Q1 * Q2).w = (w1w2 - x1x2 - y1y2 - z1z2)
-            //     (Q1 * Q2).x = (w1x2 + x1w2 + y1z2 - z1y2)
-            //     (Q1 * Q2).y = (w1y2 - x1z2 + y1w2 + z1x2)
-            //     (Q1 * Q2).z = (w1z2 + x1y2 - y1x2 + z1w2
-            return Quaternion(
-                w*q.w - x*q.x - y*q.y - z*q.z,  // new w
-                w*q.x + x*q.w + y*q.z - z*q.y,  // new x
-                w*q.y - x*q.z + y*q.w + z*q.x,  // new y
-                w*q.z + x*q.y - y*q.x + z*q.w); // new z
-        }
-
-        Quaternion getConjugate() {
-            return Quaternion(w, -x, -y, -z);
-        }
-        
-        float getMagnitude() {
-            return sqrt(w*w + x*x + y*y + z*z);
-        }
-        
-        void normalize() {
-            float m = getMagnitude();
-            w /= m;
-            x /= m;
-            y /= m;
-            z /= m;
-        }
-        
-        Quaternion getNormalized() {
+        Quaternion Divide(Quaternion quaternion)
+        {
             Quaternion r(w, x, y, z);
-            r.normalize();
+
+            double scale = quaternion.w * quaternion.w + quaternion.x * quaternion.x + quaternion.y * quaternion.y + quaternion.z * quaternion.z;
+
+            r.w = (this->w * quaternion.w + this->x * quaternion.x + this->y * quaternion.y + this->z * quaternion.z) / scale;
+            r.x = (-this->w * quaternion.x + this->x * quaternion.w + this->y * quaternion.z - this->z * quaternion.y) / scale;
+            r.y = (-this->w * quaternion.y - this->x * quaternion.z + this->y * quaternion.w + this->z * quaternion.x) / scale;
+            r.z = (-this->w * quaternion.z + this->x * quaternion.y - this->y * quaternion.x + this->z * quaternion.w) / scale;
+
             return r;
         }
-};
 
-class VectorInt16 {
-    public:
-        int16_t x;
-        int16_t y;
-        int16_t z;
+        Quaternion Divide(double scalar) 
+        {
+            Quaternion r(w, x, y, z);
 
-        VectorInt16() {
-            x = 0;
-            y = 0;
-            z = 0;
-        }
-        
-        VectorInt16(int16_t nx, int16_t ny, int16_t nz) {
-            x = nx;
-            y = ny;
-            z = nz;
-        }
+            r.w = r.w / scalar;
+            r.x = r.x / scalar;
+            r.y = r.y / scalar;
+            r.z = r.z / scalar;
 
-        float getMagnitude() {
-            return sqrt(x*x + y*y + z*z);
-        }
-
-        void normalize() {
-            float m = getMagnitude();
-            x /= m;
-            y /= m;
-            z /= m;
-        }
-        
-        VectorInt16 getNormalized() {
-            VectorInt16 r(x, y, z);
-            r.normalize();
             return r;
         }
-        
-        void rotate(Quaternion *q) {
-            // http://www.cprogramming.com/tutorial/3d/quaternions.html
-            // http://www.euclideanspace.com/maths/algebra/realNormedAlgebra/quaternions/transforms/index.htm
-            // http://content.gpwiki.org/index.php/OpenGL:Tutorials:Using_Quaternions_to_represent_rotation
-            // ^ or: http://webcache.googleusercontent.com/search?q=cache:xgJAp3bDNhQJ:content.gpwiki.org/index.php/OpenGL:Tutorials:Using_Quaternions_to_represent_rotation&hl=en&gl=us&strip=1
-        
-            // P_out = q * P_in * conj(q)
-            // - P_out is the output vector
-            // - q is the orientation quaternion
-            // - P_in is the input vector (a*aReal)
-            // - conj(q) is the conjugate of the orientation quaternion (q=[w,x,y,z], q*=[w,-x,-y,-z])
-            Quaternion p(0, x, y, z);
 
-            // quaternion multiplication: q * p, stored back in p
-            p = q -> getProduct(p);
+        Quaternion Add(Quaternion quaternion)
+        {
+            Quaternion r(w, x, y, z);
 
-            // quaternion multiplication: p * conj(q), stored back in p
-            p = p.getProduct(q -> getConjugate());
+            r.w = this->w + quaternion.w;
+            r.x = this->x + quaternion.x;
+            r.y = this->y + quaternion.y;
+            r.z = this->z + quaternion.z;
 
-            // p quaternion is now [0, x', y', z']
-            x = p.x;
-            y = p.y;
-            z = p.z;
-        }
-
-        VectorInt16 getRotated(Quaternion *q) {
-            VectorInt16 r(x, y, z);
-            r.rotate(q);
             return r;
         }
-};
 
-class VectorFloat {
-    public:
-        float x;
-        float y;
-        float z;
+        Quaternion UnitQuaternion(Quaternion quaternion)
+        {
+            Quaternion r(w, x, y, z);
 
-        VectorFloat() {
-            x = 0;
-            y = 0;
-            z = 0;
-        }
-        
-        VectorFloat(float nx, float ny, float nz) {
-            x = nx;
-            y = ny;
-            z = nz;
-        }
+            double n = r.Magnitude();
 
-        float getMagnitude() {
-            return sqrt(x*x + y*y + z*z);
-        }
+            r.w = r.w / n;
+            r.x = r.x / n;
+            r.y = r.y / n;
+            r.z = r.z / n;
 
-        void normalize() {
-            float m = getMagnitude();
-            x /= m;
-            y /= m;
-            z /= m;
-        }
-        
-        VectorFloat getNormalized() {
-            VectorFloat r(x, y, z);
-            r.normalize();
             return r;
         }
-        
-        void rotate(Quaternion *q) {
-            Quaternion p(0, x, y, z);
 
-            // quaternion multiplication: q * p, stored back in p
-            p = q -> getProduct(p);
-
-            // quaternion multiplication: p * conj(q), stored back in p
-            p = p.getProduct(q -> getConjugate());
-
-            // p quaternion is now [0, x', y', z']
-            x = p.x;
-            y = p.y;
-            z = p.z;
+        double Magnitude() 
+        {
+            return sqrt(Normal());
         }
 
-        VectorFloat getRotated(Quaternion *q) {
-            VectorFloat r(x, y, z);
-            r.rotate(q);
+        double Normal() 
+        {
+            Quaternion r(w, x, y, z);
+
+            return pow(r.w, 2.0) + pow(r.x, 2.0) + pow(r.y, 2.0) + pow(r.z, 2.0);
+        }
+
+        Quaternion SphericalInterpolation(Quaternion q1, Quaternion q2, double ratio) 
+        {
+            q1 = q1.UnitQuaternion();
+            q2 = q2.UnitQuaternion();
+
+            double dot = q1.DotProduct(q2);//Cosine between the two quaternions
+
+            if (dot < 0.0)//Shortest path correction
+            {
+                q1 = q1.AdditiveInverse();
+                dot = -dot;
+            }
+
+            if (dot > 0.999)//Linearly interpolates if results are close
+            {
+                return (q1.Add((q2.Subtract(q1)).Multiply(ratio))).UnitQuaternion();
+            }
+            else
+            {
+                dot = Constrain(dot, -1, 1);
+
+                double theta0 = acos(dot);
+                double theta = theta0 * ratio;
+
+                double f1 = cos(theta) - dot * sin(theta) / sin(theta0);
+                double f2 = sin(theta) / sin(theta0);
+
+                return q1.Multiply(f1).Add(q2.Multiply(f2)).UnitQuaternion();
+            }
+        }
+
+        Quaternion Multiply(double scalar)
+        {
+            Quaternion r(w, x, y, z);
+
+            r.w = r.w * scalar;
+            r.x = r.x * scalar;
+            r.y = r.y * scalar;
+            r.z = r.z * scalar;
+            
             return r;
+        }
+
+        Quaternion Subtract(Quaternion quaternion)
+        {
+            Quaternion r(w, x, y, z);
+
+            r.w = r.w - quaternion.w;
+            r.x = r.x - quaternion.x;
+            r.y = r.y - quaternion.y;
+            r.z = r.z - quaternion.z;
+
+            return r;
+        }
+
+        Quaternion UnitQuaternion() 
+        {
+            Quaternion r(w, x, y, z);
+
+            double n = r.Magnitude();
+
+            r.w = r.w / n;
+            r.x = r.x / n;
+            r.y = r.y / n;
+            r.z = r.z / n;
+
+            return r;
+        }
+
+        Quaternion AdditiveInverse() 
+        {
+            Quaternion r(w, x, y, z);
+
+            r.w = -r.w;
+            r.x = -r.x;
+            r.y = -r.y;
+            r.z = -r.z;
+
+            return r;
+        }
+
+        double DotProduct(Quaternion q)
+        {
+            return (w * q.w) + (x * q.x) + (y * q.y) + (z * q.z);
+        }
+
+        float Constrain(float v, float minimum, float maximum)
+        {
+            if (v > maximum)
+                v = maximum;
+            else if (v < minimum)
+                v = minimum;
+
+            return v;
         }
 };
 

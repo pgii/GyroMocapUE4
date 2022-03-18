@@ -1,4 +1,7 @@
-﻿public class BaseModel
+﻿namespace GyroSensorReceiver.Models
 {
-    public string type;
+    public class BaseModel
+    {
+        public string type;
+    }
 }

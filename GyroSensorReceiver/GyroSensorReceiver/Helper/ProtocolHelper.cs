@@ -1,85 +1,89 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using System;
+using GyroSensorReceiver.Models;
+using Newtonsoft.Json;
 
-class ProtocolHelper
+namespace GyroSensorReceiver.Helper
 {
-    public static BaseModel ParseBaseModel(string jsonString)
+    class ProtocolHelper
     {
-        BaseModel model = new BaseModel();
-
-        try
+        public static BaseModel ParseBaseModel(string jsonString)
         {
-            return JsonConvert.DeserializeObject<BaseModel>(jsonString);
-        }
-        catch (Exception ex)
-        {
-            Program.ExceptionLog(ex);
-        }
+            BaseModel model = new BaseModel();
 
-        return model;
-    }
+            try
+            {
+                return JsonConvert.DeserializeObject<BaseModel>(jsonString);
+            }
+            catch (Exception ex)
+            {
+                Program.ExceptionLog(ex);
+            }
 
-    public static SettingsModel ParseSettingsModel(string jsonString)
-    {
-        SettingsModel model = new SettingsModel();
-
-        try
-        {
-            return JsonConvert.DeserializeObject<SettingsModel>(jsonString);
-        }
-        catch (Exception ex)
-        {
-            Program.ExceptionLog(ex);
+            return model;
         }
 
-        return model;
-    }
-
-    public static SaveSettingsResultModel ParseSaveSettingsResultModel(string jsonString)
-    {
-        SaveSettingsResultModel model = new SaveSettingsResultModel();
-
-        try
+        public static SettingsModel ParseSettingsModel(string jsonString)
         {
-            return JsonConvert.DeserializeObject<SaveSettingsResultModel>(jsonString);
-        }
-        catch (Exception ex)
-        {
-            Program.ExceptionLog(ex);
-        }
+            SettingsModel model = new SettingsModel();
 
-        return model;
-    }
+            try
+            {
+                return JsonConvert.DeserializeObject<SettingsModel>(jsonString);
+            }
+            catch (Exception ex)
+            {
+                Program.ExceptionLog(ex);
+            }
 
-    public static ResetSettingsResultModel ParseResetSettingsResultModel(string jsonString)
-    {
-        ResetSettingsResultModel model = new ResetSettingsResultModel();
-
-        try
-        {
-            return JsonConvert.DeserializeObject<ResetSettingsResultModel>(jsonString);
-        }
-        catch (Exception ex)
-        {
-            Program.ExceptionLog(ex);
+            return model;
         }
 
-        return model;
-    }
-
-    public static StatusModel ParseStatusModel(string jsonString)
-    {
-        StatusModel model = new StatusModel();
-
-        try
+        public static SaveSettingsResultModel ParseSaveSettingsResultModel(string jsonString)
         {
-            return JsonConvert.DeserializeObject<StatusModel>(jsonString);
-        }
-        catch (Exception ex)
-        {
-            Program.ExceptionLog(ex);
+            SaveSettingsResultModel model = new SaveSettingsResultModel();
+
+            try
+            {
+                return JsonConvert.DeserializeObject<SaveSettingsResultModel>(jsonString);
+            }
+            catch (Exception ex)
+            {
+                Program.ExceptionLog(ex);
+            }
+
+            return model;
         }
 
-        return model;
+        public static ResetSettingsResultModel ParseResetSettingsResultModel(string jsonString)
+        {
+            ResetSettingsResultModel model = new ResetSettingsResultModel();
+
+            try
+            {
+                return JsonConvert.DeserializeObject<ResetSettingsResultModel>(jsonString);
+            }
+            catch (Exception ex)
+            {
+                Program.ExceptionLog(ex);
+            }
+
+            return model;
+        }
+
+        public static StatusModel ParseStatusModel(string jsonString)
+        {
+            StatusModel model = new StatusModel();
+
+            try
+            {
+                return JsonConvert.DeserializeObject<StatusModel>(jsonString);
+            }
+            catch (Exception ex)
+            {
+                Program.ExceptionLog(ex);
+            }
+
+            return model;
+        }
     }
 }

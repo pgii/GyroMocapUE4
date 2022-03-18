@@ -1,19 +1,22 @@
 ﻿using System.Collections.Concurrent;
 using System.Linq;
+using GyroSensorReceiver.Models;
 
-public class SensorCalibration
+namespace GyroSensorReceiver.Helper
 {
-    readonly ConcurrentDictionary<string, GyroQuaternion> _calibrationDictionary = new ConcurrentDictionary<string, GyroQuaternion>();
-
-    public void Push(GyroQuaternion quat)
+    public class SensorCalibration
     {
-        if (_calibrationDictionary.All(x => x.Key != quat.sensorName))
-            _calibrationDictionary.TryAdd(quat.sensorName, new GyroQuaternion(quat.sensorName, quat.qX, quat.qY, quat.qZ, quat.qW));
-    }
+        readonly ConcurrentDictionary<string, GyroQuaternion> _calibrationDictionary = new ConcurrentDictionary<string, GyroQuaternion>();
 
-    public GyroQuaternion GetCalibrationResult(string sensorName)
-    {
-        return _calibrationDictionary.FirstOrDefault(x => x.Key == sensorName).Value;
+        public void Push(GyroQuaternion quaternion)
+        {
+            if (_calibrationDictionary.All(x => x.Key != quaternion.sensorName))
+                _calibrationDictionary.TryAdd(quaternion.sensorName, new GyroQuaternion(quaternion.sensorName, quaternion.qX, quaternion.qY, quaternion.qZ, quaternion.qW));
+        }
+
+        public GyroQuaternion GetCalibrationResult(string sensorName)
+        {
+            return _calibrationDictionary.FirstOrDefault(x => x.Key == sensorName).Value;
+        }
     }
 }
-

@@ -3,6 +3,11 @@ using System;
 using System.Drawing;
 using System.IO.Ports;
 using System.Windows.Forms;
+using GyroSensorReceiver.Events;
+using GyroSensorReceiver.Events.Events;
+using GyroSensorReceiver.Helper;
+using GyroSensorReceiver.Models;
+using GyroSensorReceiver.Utils;
 
 public partial class MainForm : Form
 {
@@ -10,12 +15,10 @@ public partial class MainForm : Form
 
     SensorCalibration _sensorCalibration = new SensorCalibration();
 
-    UDPAsyncSocket _receiveUdpServer = new UDPAsyncSocket();
-    UDPAsyncSocket _senderUdpClient = new UDPAsyncSocket();
+    UdpAsyncSocket _receiveUdpServer = new UdpAsyncSocket();
+    UdpAsyncSocket _senderUdpClient = new UdpAsyncSocket();
 
     readonly Cube3D _cube3D = new Cube3D(100);
-
-    readonly FilterQuaternion _filterQuaternion = new FilterQuaternion(0.1f, 2.5f, 5, 15);
 
     public MainForm()
     {
@@ -32,19 +35,19 @@ public partial class MainForm : Form
 
         Cube3DRender(new GyroQuaternion("None", 0.25f, 0.25f, 0.25f, -1));
 
-        EventReceiveUDPServer eventReceiveUdpServer = new EventReceiveUDPServer();
-        Eventing.eventReceiveUDPServer = eventReceiveUdpServer;
-        Eventing.eventReceiveUDPServer.OnNewReceiveUDPServer += OnNewReceiveUdpServerEvent;
+        EventReceiveUdpServer eventReceiveUdpServer = new EventReceiveUdpServer();
+        Eventing.EventReceiveUdpServer = eventReceiveUdpServer;
+        Eventing.EventReceiveUdpServer.OnNewReceiveUdpServer += OnNewReceiveUdpServerEvent;
     }
 
-    void OnNewReceiveUdpServerEvent(object sender, NewEventReceiveUDPServerArgs e)
+    void OnNewReceiveUdpServerEvent(object sender, NewEventReceiveUdpServerArgs e)
     {
         try
         {
-            _sensorCalibration.Push(e.ReceiveUDPServerMessage);
+            _sensorCalibration.Push(e.ReceiveUdpServerMessage);
 
-            GyroQuaternion gyroQuaternionInverse = GyroQuaternion.Inverse(e.ReceiveUDPServerMessage);
-            GyroQuaternion gyroQuaternionCalibrationResult = _sensorCalibration.GetCalibrationResult(e.ReceiveUDPServerMessage.sensorName);
+            GyroQuaternion gyroQuaternionInverse = GyroQuaternion.Inverse(e.ReceiveUdpServerMessage);
+            GyroQuaternion gyroQuaternionCalibrationResult = _sensorCalibration.GetCalibrationResult(e.ReceiveUdpServerMessage.sensorName);
 
             if (gyroQuaternionCalibrationResult != null)
             {
@@ -55,10 +58,8 @@ public partial class MainForm : Form
                 if (_senderUdpClient.UdpSocket != null && _senderUdpClient.UdpSocket.Connected)
                     _senderUdpClient.Send(gyroQuaternion);
 
-                if (e.ReceiveUDPServerMessage.sensorName == GetSelectorSensorValue())
+                if (e.ReceiveUdpServerMessage.sensorName == GetSelectorSensorValue())
                 {
-                    gyroQuaternion = _filterQuaternion.Filter(gyroQuaternion);
-
                     Cube3DRender(gyroQuaternion);
                 }
 
@@ -150,7 +151,7 @@ public partial class MainForm : Form
 
     private void Cube3DRender(GyroQuaternion quat)
     {
-        Point3D point3D = GyroQuaternion.QuatToEuler(quat);
+        Point3D point3D = GyroQuaternion.QuaternionToEuler(quat);
 
         _cube3D.RotateX = point3D.X;
         _cube3D.RotateY = point3D.Y;
@@ -374,7 +375,7 @@ public partial class MainForm : Form
     {
         if (_receiveUdpServer.UdpSocket == null || !_receiveUdpServer.UdpSocket.IsBound)
         {
-            _receiveUdpServer = new UDPAsyncSocket();
+            _receiveUdpServer = new UdpAsyncSocket();
             _receiveUdpServer.StartServer((int)nudUDPServerRecieverPort.Value);
         }
     }
@@ -385,7 +386,7 @@ public partial class MainForm : Form
             if (_senderUdpClient.UdpSocket.Connected)
                 _senderUdpClient.UdpSocket.Close();
 
-        _senderUdpClient = new UDPAsyncSocket();
+        _senderUdpClient = new UdpAsyncSocket();
         _senderUdpClient.StartClient("127.0.0.1", (int) nudUDPClientSenderPort.Value);
     }
 

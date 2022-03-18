@@ -1,22 +1,24 @@
 using System;
-public class EventReceiveUDPServer
-{
-    public delegate void NewReceiveUDPServer(object sender, NewEventReceiveUDPServerArgs e);
-    public event NewReceiveUDPServer OnNewReceiveUDPServer;
+using GyroSensorReceiver.Models;
 
-    public void InvokeOnNewReceiveUDPServer(GyroQuaternion quat)
-    {
-        NewReceiveUDPServer handler = OnNewReceiveUDPServer;
-        NewEventReceiveUDPServerArgs e = new NewEventReceiveUDPServerArgs(quat);
-        handler?.Invoke(this, e);
-    }
-}
-
-public class NewEventReceiveUDPServerArgs : EventArgs
+namespace GyroSensorReceiver.Events.Events
 {
-    public NewEventReceiveUDPServerArgs(GyroQuaternion quat)
+    public class EventReceiveUdpServer
     {
-        ReceiveUDPServerMessage = quat;
+        public delegate void NewReceiveUdpServer(object sender, NewEventReceiveUdpServerArgs e);
+        public event NewReceiveUdpServer OnNewReceiveUdpServer;
+
+        public void InvokeOnNewReceiveUDPServer(GyroQuaternion quaternion)
+        {
+            NewReceiveUdpServer handler = OnNewReceiveUdpServer;
+            NewEventReceiveUdpServerArgs e = new NewEventReceiveUdpServerArgs(quaternion);
+            handler?.Invoke(this, e);
+        }
     }
-    public GyroQuaternion ReceiveUDPServerMessage { get; }
+
+    public class NewEventReceiveUdpServerArgs : EventArgs
+    {
+        public NewEventReceiveUdpServerArgs(GyroQuaternion quaternion) => ReceiveUdpServerMessage = quaternion;
+        public GyroQuaternion ReceiveUdpServerMessage { get; }
+    }
 }

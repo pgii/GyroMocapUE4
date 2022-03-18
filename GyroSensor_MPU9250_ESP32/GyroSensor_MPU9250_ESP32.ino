@@ -4,6 +4,7 @@
 #include "EEPROM.h"
 #include <WiFi.h>
 #include "AsyncUDP.h"
+#include "QuaternionKalmanFilter.h"
 
 #define EEPROMUtils
 #define SettingsUtils
@@ -24,7 +25,9 @@ volatile bool mpuInterrupt = false;
 Quaternion q;
 
 unsigned long timing;
-unsigned long gyroDataIntervalSend = 50;
+unsigned long gyroDataIntervalSend = 60;
+
+QuaternionKalmanFilter quaternionKalmanFilter = QuaternionKalmanFilter(0.75, 25);
 
 void setup() 
 {
@@ -73,11 +76,14 @@ void loop()
 
         fifoCount -= packetSize;
 
-        mpu.dmpGetQuaternion(&q, fifoBuffer);
-
         if (millis() - timing > gyroDataIntervalSend)
         {
             timing = millis();
+            
+            mpu.dmpGetQuaternion(&q, fifoBuffer);
+
+            q = quaternionKalmanFilter.Filter(q);
+
             String sensorName = ReadStringEEPROM(2);
             String gyroDataJSONString = GetGyroDataJSONString(sensorName, q.x, q.y, q.z, q.w);
             UDPSendData(gyroDataJSONString);

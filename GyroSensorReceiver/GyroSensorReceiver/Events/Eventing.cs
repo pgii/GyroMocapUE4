@@ -1,4 +1,9 @@
-﻿public static class Eventing
+﻿using GyroSensorReceiver.Events.Events;
+
+namespace GyroSensorReceiver.Events
 {
-    public static EventReceiveUDPServer eventReceiveUDPServer;
+    public static class Eventing
+    {
+        public static EventReceiveUdpServer EventReceiveUdpServer;
+    }
 }

@@ -76,11 +76,7 @@
   <ItemGroup>
     <Compile Include="Events\Eventing.cs" />
     <Compile Include="Events\Events\EventReceiveUDPServer.cs" />
-    <Compile Include="Helper\FixedSizedQueue.cs" />
-    <Compile Include="Helper\FilterQuaternion.cs" />
-    <Compile Include="Helper\KalmanFilter.cs" />
     <Compile Include="Helper\SensorCalibration.cs" />
-    <Compile Include="Helper\SimpleMovingAverageQuaternion.cs" />
     <Compile Include="Helper\UDPAsyncSocket.cs" />
     <Compile Include="Helper\ProtocolHelper.cs" />
     <Compile Include="MainForm.cs">

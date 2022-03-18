@@ -1,4 +1,6 @@
-﻿class SettingsModel : BaseModel
+﻿using GyroSensorReceiver.Models;
+
+class SettingsModel : BaseModel
 {
     public string wifi_ssid;
     public string wifi_pass;

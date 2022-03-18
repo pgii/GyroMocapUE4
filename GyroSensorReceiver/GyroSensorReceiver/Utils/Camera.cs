@@ -1,4 +1,7 @@
-﻿public class Camera
+﻿namespace GyroSensorReceiver.Utils
 {
-    public Point3D Position = new Point3D();
+    public class Camera
+    {
+        public Point3D Position = new Point3D();
+    }
 }
